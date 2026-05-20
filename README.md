@@ -102,19 +102,40 @@ linux-libc-dev\_6.1.141-1\_arm64.deb
 
 完成后重新编译。
 
+**ubuntu22扩容**
 
+默认的/dev/root大小才5GB，剩余空间仅900MB，完全不够用，因此，需要做扩容分区。
 
+扩容方法就是更改 parameter.txt。
 
+而 rockdev 下的 parameter.txt 是映射的 `tspi-1m-linux-sdk/device/rockchip/rk3566_rk3568/parameter-buildroot-fit.txt`
 
+故修改sdk中的 parameter.txt：
 
+```bash
+tspi-1m-linux-sdk/device/rockchip/rk3566_rk3568/parameter-buildroot-fit.txt
+```
 
+原本rootfs默认是6G，我们改为12G。
 
+原始内容：
+```bash
+CMDLINE: mtdparts=:0x00002000@0x00004000(uboot),0x00002000@0x00006000(misc),0x00020000@0x00008000(boot),0x00040000@0x00028000(recovery),0x00010000@0x00068000(backup),0x00c00000@0x00078000(rootfs),0x00040000@0x00c78000(oem),-@0x00cb8000(userdata:grow)
+```
 
+关注 CMDLINE 这行，格式为 `size@addr(name)`，其中 size 表示该分区大小，addr 表示该分区起始地址，name 表示分区名。
 
+注意的是，这里以512B为单位的而非1024B，所以 rootfs 的 0x00c00000 是12582912B/1024/1024/512B*1024B = 6GB ，想要修改成12GB就是0x01800000 。
 
+更改为12GB后：
 
+```bash
+CMDLINE: mtdparts=:0x00002000@0x00004000(uboot),0x00002000@0x00006000(misc),0x00020000@0x00008000(boot),0x00040000@0x00028000(recovery),0x00010000@0x00068000(backup),0x01800000@0x00078000(rootfs),0x00040000@0x01878000(oem),-@0x018b8000(userdata:grow)
+```
 
+完成后先编译debian，然后去kernel-6.1下编译得到deb包，再去ubuntu22编译脚本文件夹下编译出ubuntu22-rootfs.img，最后烧录的时候直接替换你固件位置中的rootfs位置即可。
 
+注意，在烧录替换的时候，要连我们更新的 parameter-fit.txt 也要烧录进去。rootfs就是编译出来的ubuntu22-rootfs.img，oem和userdata还是rockdev下的原始文件。
 
 
 
