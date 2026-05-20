@@ -1,7 +1,8 @@
-# Ubuntu for TSPI-M1-RK3566 (Linux 5.10)
+# Ubuntu for TSPI-1M-RK3566 (Linux 6.1)
 
 #### 介绍
-为 `TSPI-M1-RK3566` 开发板定制的 Ubuntu 22.04.5 LTS系统，基于Linux 5.10.209内核。支持桌面版(xfce)和服务器版两种构建方式。
+
+为 `TSPI-1M-RK3566` 开发板定制的 Ubuntu 22.04.5 LTS系统，基于Linux 6.1 内核。支持桌面版(xfce)和服务器版两种构建方式。
 
 #### 软件架构
 
@@ -18,10 +19,11 @@
 #### 安装教程
 
 **环境要求**
-- Ubuntu 22.04 LTS 主机环境
-- 网络环境确保正常
-- 存储空间：至少 `50GB` 可用空间
-- 宿主机环境依赖需要安装！具体步骤在下面的 `1. 检查宿主机环境`
+
+* Ubuntu 22.04 LTS 主机环境
+* 网络环境确保正常
+* 存储空间：至少 `50GB` 可用空间
+* 宿主机环境依赖需要安装！具体步骤在下面的 `1. 检查宿主机环境`
 
 **构建步骤**
 
@@ -31,33 +33,93 @@
 > 3. 全程都在`ubuntu目录`下操作
 
 1. 检查宿主机环境并安装设置依赖
+
 ```bash
-sudo apt update && sudo apt full-upgrade && \
-sudo ./host_check.sh && sudo pip3 install pyelftools && \
-sudo ln -sf /usr/bin/python3 /usr/bin/python && \
-sudo sed -i -e '/\%sudo/ c \%sudo ALL=(ALL) NOPASSWD: ALL' /etc/sudoers && \
-sudo usermod -a -G sudo $USER && \
+sudo apt update \&\& sudo apt full-upgrade \&\& \\
+sudo ./host\_check.sh \&\& sudo pip3 install pyelftools \&\& \\
+sudo ln -sf /usr/bin/python3 /usr/bin/python \&\& \\
+sudo sed -i -e '/\\%sudo/ c \\%sudo ALL=(ALL) NOPASSWD: ALL' /etc/sudoers \&\& \\
+sudo usermod -a -G sudo $USER \&\& \\
 exec su - $USER
 ```
 
 2. 选择构建类型（桌面版/服务器版）：
+
 ```bash
 # 桌面版
-GUI=desktop ./mk-base-ubuntu.sh && \
-GUI=desktop ./mk-ubuntu-rootfs.sh && \
+GUI=desktop ./mk-base-ubuntu.sh \&\& \\
+GUI=desktop ./mk-ubuntu-rootfs.sh \&\& \\
 ./mk-image.sh
 
 # 服务器版
-GUI=console ./mk-base-ubuntu.sh && \
-GUI=console ./mk-ubuntu-rootfs.sh && \
+GUI=console ./mk-base-ubuntu.sh \&\& \\
+GUI=console ./mk-ubuntu-rootfs.sh \&\& \\
 ./mk-image.sh
 ```
 
-3. 最后会在当前`ubuntu目录`生成 `ubuntu-jammy.img` 镜像文件, 烧录到对应的`rootfs.img`地址即可~
+3. 最后会在当前`ubuntu目录`生成 `ubuntu-jammy.img` 镜像文件, 烧录到对应的`rootfs.img`地址即可\~
 
 #### 其他
 
 **清理构建**
+
 ```bash
 sudo ./clean-build.sh
 ```
+
+**缺少 deb 包**
+
+> 参考：https://blog.hdochub.com/article/223.html
+
+如果缺少deb包，需要手动下载并放入`SDK目录`下。
+
+需要在 Ubuntu 22 虚拟机中执行：
+
+第一步：生成 kernel 6.1 的标准 deb 包
+
+进入内核源码目录：
+
+```bash
+cd /path/to/rk3566_rk3568_linux6.1_release/kernel-6.1
+```
+
+执行：
+
+```bash
+make CROSS\_COMPILE=aarch64-linux-gnu- ARCH=arm64 \\
+LOCALVERSION="" \\
+bindeb-pkg -j$(nproc)
+```
+> 注意加 LOCALVERSION="" 是避免 git hash 附加到版本号（因为 .config 里 CONFIG_LOCALVERSION_AUTO=y）。
+
+生成成功后，会在 SDK 根目录（rk3566_rk3568_linux6.1_release/）出现三个文件：
+
+```bash
+linux-headers-6.1.141\_6.1.141-1\_arm64.deb
+linux-image-6.1.141\_6.1.141-1\_arm64.deb
+linux-libc-dev\_6.1.141-1\_arm64.deb
+```
+
+完成后重新编译。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
