@@ -46,9 +46,12 @@ if [ ! -e "$BASE_IMAGE" ]; then
     exit 1
 fi
 
-LINUX_UPDATE_DEB_HEADERS="../linux-headers-5.10.209_5.10.209-*_arm64.deb"
-LINUX_UPDATE_DEB_IMAGE="../linux-image-5.10.209_5.10.209-*_arm64.deb"
-LINUX_UPDATE_DEB_LIBC_DEV="../linux-libc-dev_5.10.209-*_arm64.deb"
+# LINUX_UPDATE_DEB_HEADERS="../linux-headers-5.10.209_5.10.209-*_arm64.deb"
+# LINUX_UPDATE_DEB_IMAGE="../linux-image-5.10.209_5.10.209-*_arm64.deb"
+# LINUX_UPDATE_DEB_LIBC_DEV="../linux-libc-dev_5.10.209-*_arm64.deb"
+LINUX_UPDATE_DEB_HEADERS="../linux-headers-6.1.141_6.1.141-*_arm64.deb"
+LINUX_UPDATE_DEB_IMAGE="../linux-image-6.1.141_6.1.141-*_arm64.deb"
+LINUX_UPDATE_DEB_LIBC_DEV="../linux-libc-dev_6.1.141-*_arm64.deb"
 
 # 检查三个DEB包是否存在
 if [ ! -e $LINUX_UPDATE_DEB_HEADERS ] || [ ! -e $LINUX_UPDATE_DEB_IMAGE ] || [ ! -e $LINUX_UPDATE_DEB_LIBC_DEV ]; then
@@ -69,9 +72,12 @@ fi
 sudo mkdir -p $TARGET_ROOTFS_DIR/packages
 sudo cp -rpf packages/arm64/* $TARGET_ROOTFS_DIR/packages
 sudo mkdir -p $TARGET_ROOTFS_DIR/packages/linux-deb
-sudo cp ../linux-headers-5.10.209_5.10.209-*_arm64.deb $TARGET_ROOTFS_DIR/packages/linux-deb
-sudo cp ../linux-image-5.10.209_5.10.209-*_arm64.deb $TARGET_ROOTFS_DIR/packages/linux-deb
-sudo cp ../linux-libc-dev_5.10.209-*_arm64.deb $TARGET_ROOTFS_DIR/packages/linux-deb
+# sudo cp ../linux-headers-5.10.209_5.10.209-*_arm64.deb $TARGET_ROOTFS_DIR/packages/linux-deb
+# sudo cp ../linux-image-5.10.209_5.10.209-*_arm64.deb $TARGET_ROOTFS_DIR/packages/linux-deb
+# sudo cp ../linux-libc-dev_5.10.209-*_arm64.deb $TARGET_ROOTFS_DIR/packages/linux-deb
+sudo cp ../linux-headers-6.1.141_6.1.141-*_arm64.deb $TARGET_ROOTFS_DIR/packages/linux-deb
+sudo cp ../linux-image-6.1.141_6.1.141-*_arm64.deb $TARGET_ROOTFS_DIR/packages/linux-deb
+sudo cp ../linux-libc-dev_6.1.141-*_arm64.deb $TARGET_ROOTFS_DIR/packages/linux-deb
 
 # overlay folder
 sudo cp -rpf overlay/* $TARGET_ROOTFS_DIR/
@@ -111,8 +117,8 @@ sudo tee "$TARGET_ROOTFS_DIR/etc/systemd/system/wifibt-init.service.d/add-delay.
 ExecStartPre=/bin/sleep 5
 EOI
 
-# sudo find $WIFI_BT_FIRMWARE_PATCH/ -type f -exec cp {} "$TARGET_ROOTFS_DIR/system/etc/firmware/" \;
-# sudo find $WIFI_BT_TOOL_PATCH/ -type f -executable -exec cp -avf {} $TARGET_ROOTFS_DIR/usr/bin/ \;
+sudo find $WIFI_BT_FIRMWARE_PATCH/ -type f -exec cp {} "$TARGET_ROOTFS_DIR/system/etc/firmware/" \;
+sudo find $WIFI_BT_TOOL_PATCH/ -type f -executable -exec cp -avf {} $TARGET_ROOTFS_DIR/usr/bin/ \;
 
 echo -e "\033[36m Change root.....................\033[0m"
 
@@ -237,7 +243,11 @@ echo -e "\033[36m Installing wireless components... \033[0m"
 \${APT_INSTALL} /packages/rkwifibt/*.deb
 ln -sf /system/etc/firmware /vendor/etc/
 ln -sf /system/etc/firmware/* /usr/lib/firmware/
-echo "bcmdhd" | tee /etc/modules-load.d/bcmdhd.conf
+# bcmdhd is loaded by wifibt-init.service at the right time, do not load early
+# echo "bcmdhd" | tee /etc/modules-load.d/bcmdhd.conf
+echo "blacklist bcmdhd" > /etc/modprobe.d/blacklist-bcmdhd.conf
+# wifibt-util.sh expects module in /lib/modules/
+ln -sf /system/lib/modules/bcmdhd.ko /lib/modules/bcmdhd.ko
 chmod 644 /etc/systemd/system/wifibt-init.service.d/add-delay.conf
 systemctl enable wifibt-init.service
 
