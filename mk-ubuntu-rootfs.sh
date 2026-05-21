@@ -161,7 +161,7 @@ fi
 # Common package installation
 #---------------------------
 echo -e "\033[36m Installing core system packages... \033[0m"
-\${APT_INSTALL} bluez bluez-tools
+\${APT_INSTALL} bluez bluez-tools gdisk parted e2fsprogs
 
 #---------------------------
 # Power management setup
