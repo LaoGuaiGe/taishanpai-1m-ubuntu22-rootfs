@@ -305,6 +305,12 @@ echo -e "\033[36m Configuring system services... \033[0m"
 systemctl mask systemd-networkd-wait-online.service
 systemctl mask NetworkManager-wait-online.service
 rm -f /lib/systemd/system/wpa_supplicant@.service
+systemctl enable adbd.service
+systemctl enable rockchip.service
+systemctl enable rkwifibt.service
+systemctl enable resize-disk.service
+systemctl enable networking.service
+systemctl enable async.service
 
 #---------------------------
 # Set Audio-Devices Description
