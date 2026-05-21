@@ -1,0 +1,9 @@
+# Preserve executable permissions for scripts and binaries
+*.sh eol=lf
+mk-ubuntu-rootfs.sh eol=lf
+mk-base-ubuntu.sh eol=lf
+mk-image.sh eol=lf
+ch-mount.sh eol=lf
+clean-build.sh eol=lf
+host_check.sh eol=lf
+post-build.sh eol=lf
